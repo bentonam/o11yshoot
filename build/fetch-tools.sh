@@ -16,13 +16,10 @@ fi
 echo "HOST_OS: ${HOST_OS}"
 echo "HOST_ARCH: ${HOST_ARCH}"
 
-
 getLatestRelease() {
   local org="${1}"
   local repo="${2}"
   local releases_url="${API_URL}/${org}/${repo}/releases/latest"
-
-  echo "$releases_url"
   local header_token='Authorization: Bearer ${{ secrets.GHCR_TOKEN }}'
   # check to see if a token exists in the environment
   if ! [[ -z "${GHCR_TOKEN+x}" ]]; then
@@ -68,7 +65,7 @@ install() {
   wget -q -O "${TMP_DIR}/${saved_filename}" "${download_url}"
 
   if [[ "${download_file_path}" == *.tar.gz ]]; then
-    ( cd "${TMP_DIR}" || exit ; tar -xvf "${TMP_DIR}/${saved_filename}" "*${binary}*" )
+    ( cd "${TMP_DIR}" || exit ; tar -xvf "${TMP_DIR}/${saved_filename}" )
     # generate a directory name from the tar archive
     local new_dir="${saved_filename//.tar.gz/}"
     # find the binary in the directory and move it, if it exists
@@ -114,13 +111,13 @@ install "grafana" "loki" "logcli" "v{{version}}/{{binary}}-{{os}}-{{arch}}.zip"
 install "grafana" "loki" "promtail" "v{{version}}/{{binary}}-{{os}}-{{arch}}.zip"
 
 # promtool is used to view/check configuration, perform queries, inspect tsdb
-install "prometheus" "prometheus" "promtool" --wildcards "v{{version}}/{{repo}}-{{version}}.{{os}}-{{arch}}.tar.gz"
+install "prometheus" "prometheus" "promtool" "v{{version}}/{{repo}}-{{version}}.{{os}}-{{arch}}.tar.gz"
 
 # amtool is used to view and modify the current Alertmanager state, validate the config, test templates, etc.
-install "prometheus" "alertmanager" "amtool" --wildcards "v{{version}}/{{repo}}-{{version}}.{{os}}-{{arch}}.tar.gz"
+install "prometheus" "alertmanager" "amtool" "v{{version}}/{{repo}}-{{version}}.{{os}}-{{arch}}.tar.gz"
 
 # pint is a Prometheus Rule Linter from Cloudflare that checks for common mistakes and helps you write better rules.
-install "cloudflare" "pint" "pint" --wildcards "v{{version}}/{{repo}}-{{version}}-{{os}}-{{arch}}.tar.gz"
+install "cloudflare" "pint" "pint" "v{{version}}/{{repo}}-{{version}}-{{os}}-{{arch}}.tar.gz"
 
 # jq is for processing json
 install "jqlang" "jq" "jq" "jq-{{version}}/{{binary}}-{{os}}-{{arch}}"
