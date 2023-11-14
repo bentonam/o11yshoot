@@ -4,16 +4,38 @@ GITHUB_URL="https://github.com"
 API_URL="https://api.github.com/repos"
 TMP_DIR="/tmp"
 
+HOST_OS=$(uname -a | awk '{print tolower($1)}' || true)
+HOST_ARCH=$(uname -m)
+
+if [[ "${HOST_ARCH}" == "x86_64" ]]; then
+  HOST_ARCH=amd64
+elif [[ "${HOST_ARCH}" == "aarch64" ]]; then
+  HOST_ARCH=arm64
+fi
+
+echo "HOST_OS: ${HOST_OS}"
+echo "HOST_ARCH: ${HOST_ARCH}"
+
+
 getLatestRelease() {
   local org="${1}"
   local repo="${2}"
-  local link="${API_URL}/${org}/${repo}/releases/latest";
+  local releases_url="${API_URL}/${org}/${repo}/releases/latest"
+
+  echo "$releases_url"
+  local header_token='Authorization: Bearer ${{ secrets.GHCR_TOKEN }}'
+  # check to see if a token exists in the environment
+  if ! [[ -z "${GHCR_TOKEN+x}" ]]; then
+    header_token="Authorization: Bearer ${GHCR_TOKEN}"
+  fi
+
   local version
   version=$(
-    wget -q -O - "${link}" \
+    wget --header="${header_token}" -q -O - "${releases_url}" \
       | grep -m 1 tag_name  \
-      | sed -E 's/[^:]+ *"[^0-9]*([^"]+)".*/\1/'
+      | sed -E 's/[^:]+ *"[^0-9]*([^"]+)".*/\1/' || true
   )
+
   echo "${version}"
 }
 
@@ -34,10 +56,13 @@ install() {
   download_file_path="${download_file_path//\{\{version\}\}/${version}}"
   download_file_path="${download_file_path//\{\{os\}\}/${HOST_OS}}"
 
+  echo "download_file_path: ${download_file_path}"
   download_url="${download_url}/${download_file_path}"
+  echo "download_url: ${download_url}"
 
   local saved_filename
   saved_filename=$(basename "${download_file_path}")
+  echo "saved_filename: ${saved_filename}"
 
   # download the file to /tmp
   wget -q -O "${TMP_DIR}/${saved_filename}" "${download_url}"
@@ -68,15 +93,6 @@ install() {
   chmod +x "${TMP_DIR}/${binary}"
 }
 
-HOST_OS=$(uname -s | awk '{print tolower($1)}' || true)
-HOST_ARCH=$(uname -m)
-
-if [[ "${HOST_ARCH}" == "x86_64" ]]; then
-  HOST_OS=amd64
-elif [[ "${HOST_ARCH}" == "aarch64" ]]; then
-  HOST_OS=arm64
-fi
-
 # mimirtool is a command-line tool that operators and tenants can use to execute a number of common tasks that involve Grafana Mimir
 # or Grafana Cloud Metrics.
 install "grafana" "mimir" "mimirtool" "{{repo}}-{{version}}/{{binary}}-{{os}}-{{arch}}"
@@ -98,13 +114,13 @@ install "grafana" "loki" "logcli" "v{{version}}/{{binary}}-{{os}}-{{arch}}.zip"
 install "grafana" "loki" "promtail" "v{{version}}/{{binary}}-{{os}}-{{arch}}.zip"
 
 # promtool is used to view/check configuration, perform queries, inspect tsdb
-install "prometheus" "prometheus" "promtool" "v{{version}}/{{repo}}-{{version}}.{{os}}-{{arch}}.tar.gz"
+install "prometheus" "prometheus" "promtool" --wildcards "v{{version}}/{{repo}}-{{version}}.{{os}}-{{arch}}.tar.gz"
 
 # amtool is used to view and modify the current Alertmanager state, validate the config, test templates, etc.
-install "prometheus" "alertmanager" "amtool" "v{{version}}/{{repo}}-{{version}}.{{os}}-{{arch}}.tar.gz"
+install "prometheus" "alertmanager" "amtool" --wildcards "v{{version}}/{{repo}}-{{version}}.{{os}}-{{arch}}.tar.gz"
 
 # pint is a Prometheus Rule Linter from Cloudflare that checks for common mistakes and helps you write better rules.
-install "cloudflare" "pint" "pint" "v{{version}}/{{repo}}-{{version}}-{{os}}-{{arch}}.tar.gz"
+install "cloudflare" "pint" "pint" --wildcards "v{{version}}/{{repo}}-{{version}}-{{os}}-{{arch}}.tar.gz"
 
 # jq is for processing json
 install "jqlang" "jq" "jq" "jq-{{version}}/{{binary}}-{{os}}-{{arch}}"
