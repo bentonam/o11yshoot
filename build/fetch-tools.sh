@@ -20,9 +20,9 @@ getLatestRelease() {
   local org="${1}"
   local repo="${2}"
   local releases_url="${API_URL}/${org}/${repo}/releases/latest"
-  local header_token='Authorization: Bearer ${{ secrets.GHCR_TOKEN }}'
+  local header_token=''
   # check to see if a token exists in the environment
-  if ! [[ -z "${GHCR_TOKEN+x}" ]]; then
+  if [[ -n "${GHCR_TOKEN+x}" ]]; then
     header_token="Authorization: Bearer ${GHCR_TOKEN}"
   fi
 
