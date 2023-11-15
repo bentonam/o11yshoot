@@ -16,11 +16,25 @@ RUN set -ex \
     lnav \
     curl \
     wget \
-    golang-go
+    go
+
+
+COPY --from=golang:1.21-alpine3.18 /usr/local/go/ /usr/local/go/
 
 # install downloaded binaries from fetcher
 COPY --from=fetcher /tmp/* /usr/local/bin/
 
-RUN ls -lathr /usr/local/bin
+ENV PATH="/usr/local/go/bin:${PATH}"
+
+ENV GOPATH /go
+ENV PATH $GOPATH/bin:$PATH
+
+RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && \
+  chmod -R 777 "$GOPATH" && \
+  go install github.com/grafana/memo/cmd/...@latest && \
+  go install github.com/grafana/unused/cmd/unused@latest && \
+  go install github.com/grafana/dashboard-linter@latest && \
+  ls -lathr /usr/local/bin && \
+  ls -lathr /go/bin
 
 CMD ["zsh"]
