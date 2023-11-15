@@ -52,4 +52,4 @@ jobs:
             --tag "${GITHUB_REPOSITORY}:latest" \
             --tag "ghcr.io/${GITHUB_REPOSITORY}:${GITHUB_SHA}" \
             --tag "ghcr.io/${GITHUB_REPOSITORY}:${RELEASE_VERSION}" \
-            --tag "ghcr.io/${GITHUB_REPOSITORY}:latest .
+            --tag "ghcr.io/${GITHUB_REPOSITORY}:latest" .
