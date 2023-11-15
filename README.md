@@ -18,7 +18,7 @@ In addition to everything that [netshoot](https://github.com/nicolaka/netshoot/t
 -   [unused](https://github.com/grafana/unused): List your unused persistent disks in different cloud providers, or expose as an exporter
 -   [lnav](https://lnav.org) An advanced log file viewer
 
-Using as a plugin in [k9s](https://k9scli.io)
+To use as a plugin in [k9s](https://k9scli.io), add the following to your `plugin.yml`
 
 ```yaml
 ---
@@ -36,4 +36,14 @@ plugin:
     args:
       - -c
       - "kubectl debug -it -n=$NAMESPACE $POD --target=$NAME --image=bentonam/o11yshoot --share-processes -- bash"
+```
+
+**Note** on macOS the `config.yml` and `plugin.yml` default directory is `~/Library/Application Support/k9s`, if you want to move it to `~/.config/k9s` instead do the following:
+
+```bash
+mkdir -p ~/.config/k9s
+mv ~/Library/Application\ Support/k9s/config.yml ~/.config/k9s
+mv ~/Library/Application\ Support/k9s/plugin.yml ~/.config/k9s
+rm -rf ~/Library/Application\ Support/k9s/
+ln -s ~/.config/k9s/ ~/Library/Application\ Support/k9s
 ```
