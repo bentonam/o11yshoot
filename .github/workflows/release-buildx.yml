@@ -48,7 +48,7 @@ jobs:
             --file ./Dockerfile \
             --build-arg "GHCR_TOKEN=${GHCR_TOKEN}" \
             --tag "${GITHUB_REPOSITORY}:${GITHUB_SHA}" \
-            --tag "${GITHUB_REPOSITORY}:${RELEASE_VERSION}"" \
+            --tag "${GITHUB_REPOSITORY}:${RELEASE_VERSION}" \
             --tag "${GITHUB_REPOSITORY}:latest" \
             --tag "ghcr.io/${GITHUB_REPOSITORY}:${GITHUB_SHA}" \
             --tag "ghcr.io/${GITHUB_REPOSITORY}:${RELEASE_VERSION}" \
